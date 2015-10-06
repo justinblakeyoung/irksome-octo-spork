@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+    <h:head>
+        <title>JSF Test 2</title>
+        <script type="text/javascript">
+            function handleEdit(xhr, status, args) {
+                if (!args.validationFailed) {
+                    EDT_WGT.hide();
+                }
+            }
+        </script>
+    </h:head>
+    <h:body>
+        <h:form>
+            <h:panelGrid columns="5" cellspacing="5px">
+                <p:commandButton value="Add Transaction"/>
+                <p:commandButton value="Remove Transaction"/>
+            </h:panelGrid>
+            <h:panelGrid>
+                <p:dataTable id="TRANS_LST" value="#{transMB.transactions}" var="transaction" rowKey="#{transaction.hashCode()}" 
+                             selectionMode="single" selection="#{transMB.transaction}" >
+                    <p:column headerText="Date">
+                        <h:outputLabel value="#{transaction.transDate}"/>
+                    </p:column>                       
+                    <p:column headerText="Description">
+                        <h:outputLabel value="#{transaction.description}"/>
+                    </p:column>
+                    <p:column headerText="Amount">
+                        <h:outputLabel value="#{transaction.amount}"/>
+                    </p:column>
+                    <p:column headerText="Balance" >
+                        <h:outputLabel value="#{transaction.balance}"/>
+                    </p:column>
+                </p:dataTable>
+            </h:panelGrid>
+        </h:form>
+    </h:body>
+
+</html>
