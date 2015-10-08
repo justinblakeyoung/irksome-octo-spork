@@ -7,6 +7,8 @@ package com.test.balance;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,6 +16,9 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -28,19 +33,20 @@ import javax.xml.bind.annotation.XmlRootElement;
 @NamedQueries({
     @NamedQuery(name = "Transactions.findAll", query = "SELECT t FROM Transactions t"),
     @NamedQuery(name = "Transactions.findByTransDate", query = "SELECT t FROM Transactions t WHERE t.transDate = :transDate"),
-    @NamedQuery(name = "Transactions.findByDescription", query = "SELECT t FROM Transactions t WHERE t.description = :description"),
+    @NamedQuery(name = "Transactions.findByDescription", query = "SELECT t FROM Transactions t WHERE t.description LIKE :description"),
     @NamedQuery(name = "Transactions.findByComments", query = "SELECT t FROM Transactions t WHERE t.comments = :comments"),
     @NamedQuery(name = "Transactions.findByCheckNumber", query = "SELECT t FROM Transactions t WHERE t.checkNumber = :checkNumber"),
     @NamedQuery(name = "Transactions.findByAmount", query = "SELECT t FROM Transactions t WHERE t.amount = :amount"),
+    @NamedQuery(name = "Transactions.sumGroupByDescription", query = "SELECT t.description,SUM(t.amount) FROM Transactions t GROUP BY t.description"),
     @NamedQuery(name = "Transactions.findByBalance", query = "SELECT t FROM Transactions t WHERE t.balance = :balance"),
     @NamedQuery(name = "Transactions.findById", query = "SELECT t FROM Transactions t WHERE t.id = :id")})
 public class Transactions implements Serializable {
     private static final long serialVersionUID = 1L;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 10)
     @Column(name = "TransDate")
-    private String transDate;
+    @Temporal(TemporalType.DATE)
+    private Date transDate;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 100)
@@ -66,6 +72,10 @@ public class Transactions implements Serializable {
     @NotNull
     @Column(name = "ID")
     private Integer id;
+    @Transient
+    private String dateString;
+    @Transient
+    private String searchString;
 
     public Transactions() {
     }
@@ -74,7 +84,7 @@ public class Transactions implements Serializable {
         this.id = id;
     }
 
-    public Transactions(Integer id, String transDate, String description, BigDecimal amount, BigDecimal balance) {
+    public Transactions(Integer id, Date transDate, String description, BigDecimal amount, BigDecimal balance) {
         this.id = id;
         this.transDate = transDate;
         this.description = description;
@@ -82,11 +92,27 @@ public class Transactions implements Serializable {
         this.balance = balance;
     }
 
-    public String getTransDate() {
+    public String getSearchString() {
+        return searchString;
+    }
+
+    public void setSearchString(String searchString) {
+        this.searchString = searchString;
+    }    
+
+    public String getDateString() {
+        return new SimpleDateFormat("MM/dd/yyyy").format(this.transDate);
+    }
+
+    public void setDateString(String dateString) {
+        this.dateString = dateString;
+    }
+    
+    public Date getTransDate() {
         return transDate;
     }
 
-    public void setTransDate(String transDate) {
+    public void setTransDate(Date transDate) {
         this.transDate = transDate;
     }
 

@@ -6,7 +6,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets">
     <h:head>
-        <title>JSF Test 2</title>
+        <title>Balance</title>
         <script type="text/javascript">
             function handleEdit(xhr, status, args) {
                 if (!args.validationFailed) {
@@ -16,16 +16,28 @@
         </script>
     </h:head>
     <h:body>
-        <h:form>
+        <h:form id="TRANS_FRM">
+            <h:panelGrid columns="3" cellspacing="5px">
+                <p:inputText id="SEARCH_BOX" value="#{transMB.searchString}"/>
+                <p:commandButton value="Search" actionListener="#{transMB.findByString()}" update=":TRANS_FRM:SEARCH_BOX :TRANS_FRM:TRANS_LST"/>
+            </h:panelGrid>               
             <h:panelGrid columns="5" cellspacing="5px">
-                <p:commandButton value="Add Transaction"/>
-                <p:commandButton value="Remove Transaction"/>
+                <p:commandButton value="Add Transaction" actionListener="#{transMB.initEditDialog()}" oncomplete="EDT_WIDGET.show()" update=":EDT_FORM:EDT_DIAG">
+                    <f:param name="editMode" value="ADD"/>                  
+                </p:commandButton>
+                <p:commandButton value="Edit Transaction" actionListener="#{transMB.initEditDialog()}" oncomplete="EDT_WIDGET.show()" >
+                    <f:param name="editMode" value="EDIT"/>
+                </p:commandButton>
+                <p:commandButton value="Remove Transaction" oncomplete="CONF_WIDGET.show()"/>
+                <p:commandButton value="Sums" actionListener="#{transMB.sumsGroupByDesc()}" update=":SUM_FORM:SUM_DIAG" oncomplete="SUM_WIDGET.show()" process="@SUM_FORM"/>
+                <p:commandButton icon="ui-icon-refresh" actionListener="#{transMB.initPage()}" update=":TRANS_FRM:TRANS_LST"/>
             </h:panelGrid>
-            <h:panelGrid>
+            <h:panelGrid columns="1" cellspacing="5px">
                 <p:dataTable id="TRANS_LST" value="#{transMB.transactions}" var="transaction" rowKey="#{transaction.hashCode()}" 
                              selectionMode="single" selection="#{transMB.transaction}" >
+                    <p:ajax event="rowSelect" update=":EDT_FORM :CONF_FORM"/>
                     <p:column headerText="Date">
-                        <h:outputLabel value="#{transaction.transDate}"/>
+                        <h:outputLabel value="#{transaction.dateString}"/>
                     </p:column>                       
                     <p:column headerText="Description">
                         <h:outputLabel value="#{transaction.description}"/>
@@ -33,12 +45,78 @@
                     <p:column headerText="Amount">
                         <h:outputLabel value="#{transaction.amount}"/>
                     </p:column>
-                    <p:column headerText="Balance" >
-                        <h:outputLabel value="#{transaction.balance}"/>
-                    </p:column>
-                </p:dataTable>
+                    <ui:remove>                        
+                        <p:column headerText="Balance" >
+                            <h:outputLabel value="#{transaction.balance}"/>
+                        </p:column>
+                    </ui:remove>
+                </p:dataTable> 
             </h:panelGrid>
         </h:form>
+
+        <h:form id="EDT_FORM">
+            <p:dialog id="EDT_DIAG" widgetVar="EDT_WIDGET" header="Edit Transaction" closable="true" modal="true" >
+                <h:panelGrid columns="1" cellspacing="5px" id="WRAPPER">
+                    <ui:fragment rendered="#{transMB.transaction ne null}">
+                        <h:panelGrid columns="2" cellspacing="5px"> 
+                            <h:outputText value="Date"/>
+                            <p:calendar value="#{transMB.transaction.transDate}" showOn="button"/>
+                            <h:outputText value="Description"/>
+                            <p:inputText value="#{transMB.transaction.description}"/>
+                            <h:outputText value="Amount"/>
+                            <p:inputText value="#{transMB.transaction.amount}"/>
+                            <h:outputText value="Balance"/>
+                            <p:inputText value="#{transMB.transaction.balance}"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" cellspacing="5px">
+                            <p:commandButton value="OK" actionListener="#{transMB.commitChanges()}" update=":TRANS_FRM:TRANS_LST" oncomplete="EDT_WIDGET.hide()" ajax="true"/>
+                            <p:commandButton value="Cancel" oncomplete="EDT_WIDGET.hide()"/>
+                        </h:panelGrid>
+                    </ui:fragment>
+                </h:panelGrid>
+            </p:dialog>
+        </h:form>
+
+        <h:form id="CONF_FORM">
+            <p:dialog id="CONF_DIAG" widgetVar="CONF_WIDGET" header="Confirm Delete" closable="true" modal="true">
+                <ui:fragment rendered="#{transMB.transaction ne null}">
+                    <h:outputText value="Are you sure you want to delete: 
+                                  #{transMB.transaction.description}"/>
+                    <h:panelGrid columns="2" cellspacing="5px">
+                        <p:commandButton value="Delete" actionListener="#{transMB.removeTransaction()}" update=":TRANS_FRM:TRANS_LST" 
+                                         ajax="true" oncomplete="CONF_WIDGET.hide()"/>
+                        <p:commandButton value="Cancel" oncomplete="CONF_WIDGET.hide()"/>
+                    </h:panelGrid>
+                </ui:fragment>
+            </p:dialog>
+        </h:form>
+
+        <h:form id="RIGHTCLK_FORM">
+            <p:contextMenu id="RIGHTCLK_MENU">
+                <p:menuitem value="Add" actionListener="#{transMB.initEditDialog()}" oncomplete="EDT_WIDGET.show()" update=":EDT_FORM:EDT_DIAG"
+                            icon="ui-icon-plus">
+                    <f:param name="editMode" value="ADD"/>
+                </p:menuitem>
+                <p:menuitem value="Edit" actionListener="#{transMB.initEditDialog()}" oncomplete="EDT_WIDGET.show()" icon="ui-icon-refresh">
+                    <f:param name="editMode" value="Edit"/>                  
+                </p:menuitem>
+                <p:menuitem value="Delete" oncomplete="CONF_WIDGET.show()" update=":TRANS_FRM:TRANS_LST" icon="ui-icon-close"/>
+            </p:contextMenu>
+        </h:form>
+
+        <h:form id="SUM_FORM">
+            <p:dialog id="SUM_DIAG" widgetVar="SUM_WIDGET" header="Sum Grouped by Description" closable="true" modal="true" draggable="true" >
+                <p:dataTable value="#{transMB.transactions}" var="transaction" paginator="true" rows="20">
+                    <p:column headerText="Description">
+                        <h:outputLabel value="#{transaction.description}"/>
+                    </p:column>
+                    <p:column headerText="Sum">
+                        <h:outputLabel value="#{transaction.amount}"/>
+                    </p:column>
+                </p:dataTable>
+            </p:dialog>
+        </h:form>
     </h:body>
+
 
 </html>
