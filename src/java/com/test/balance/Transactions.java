@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Transactions.findByComments", query = "SELECT t FROM Transactions t WHERE t.comments = :comments"),
     @NamedQuery(name = "Transactions.findByCheckNumber", query = "SELECT t FROM Transactions t WHERE t.checkNumber = :checkNumber"),
     @NamedQuery(name = "Transactions.findByAmount", query = "SELECT t FROM Transactions t WHERE t.amount = :amount"),
-    @NamedQuery(name = "Transactions.sumGroupByDescription", query = "SELECT t.description,SUM(t.amount) FROM Transactions t GROUP BY t.description"),
+    @NamedQuery(name = "Transactions.sumGroupByDescription", query = "SELECT Sum(t.amount) FROM Transactions t"),
     @NamedQuery(name = "Transactions.findByBalance", query = "SELECT t FROM Transactions t WHERE t.balance = :balance"),
     @NamedQuery(name = "Transactions.findById", query = "SELECT t FROM Transactions t WHERE t.id = :id")})
 public class Transactions implements Serializable {

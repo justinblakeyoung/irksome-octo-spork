@@ -5,6 +5,7 @@
  */
 package com.test.balance;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -77,7 +78,10 @@ public class TransMB {
     
     public void sumsGroupByDesc(){
         this.transactions.clear();
-        this.transactions.addAll(this.transEJB.sumGroupByDescription());
+        BigDecimal bd = this.transEJB.sumGroupByDescription();
+        Transactions t = new Transactions();
+        t.setAmount(bd);
+        this.transactions.add(t);
         LOG.log(Level.INFO, "Made it to sumsGroupByDesc");
     }
     

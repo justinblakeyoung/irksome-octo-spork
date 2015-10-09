@@ -5,6 +5,7 @@
  */
 package com.test.balance;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,9 +59,9 @@ public class TransEJB {
         return qry.getResultList();
     }
     
-    public Collection<Transactions> sumGroupByDescription () {
-        TypedQuery<Transactions> qry = this.em.createNamedQuery("Transactions.sumGroupByDescription", Transactions.class);
-        return qry.getResultList();
+    public BigDecimal sumGroupByDescription () {
+        TypedQuery<BigDecimal> qry = this.em.createNamedQuery("Transactions.sumGroupByDescription", BigDecimal.class);
+        return qry.getSingleResult();
     }
 
     // Add business logic below. (Right-click in editor and choose

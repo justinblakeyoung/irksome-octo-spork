@@ -16,6 +16,7 @@
         </script>
     </h:head>
     <h:body>
+
         <h:form id="TRANS_FRM">
             <h:panelGrid columns="3" cellspacing="5px">
                 <p:inputText id="SEARCH_BOX" value="#{transMB.searchString}"/>
@@ -29,25 +30,25 @@
                     <f:param name="editMode" value="EDIT"/>
                 </p:commandButton>
                 <p:commandButton value="Remove Transaction" oncomplete="CONF_WIDGET.show()"/>
-                <p:commandButton value="Sums" actionListener="#{transMB.sumsGroupByDesc()}" update=":SUM_FORM:SUM_DIAG" oncomplete="SUM_WIDGET.show()" process="@SUM_FORM"/>
+                <p:commandButton value="Sums" actionListener="#{transMB.sumsGroupByDesc()}" update=":SUM_FORM" oncomplete="SUM_WIDGET.show()"/>
                 <p:commandButton icon="ui-icon-refresh" actionListener="#{transMB.initPage()}" update=":TRANS_FRM:TRANS_LST"/>
             </h:panelGrid>
             <h:panelGrid columns="1" cellspacing="5px">
-                <p:dataTable id="TRANS_LST" value="#{transMB.transactions}" var="transaction" rowKey="#{transaction.hashCode()}" 
+                <p:dataTable id="TRANS_LST" value="#{transMB.transactions}" var="ttransaction" rowKey="#{ttransaction.id}" 
                              selectionMode="single" selection="#{transMB.transaction}" >
                     <p:ajax event="rowSelect" update=":EDT_FORM :CONF_FORM"/>
                     <p:column headerText="Date">
-                        <h:outputLabel value="#{transaction.dateString}"/>
+                        <h:outputLabel value="#{ttransaction.transDate}"/>
                     </p:column>                       
                     <p:column headerText="Description">
-                        <h:outputLabel value="#{transaction.description}"/>
+                        <h:outputLabel value="#{ttransaction.description}"/>
                     </p:column>
                     <p:column headerText="Amount">
-                        <h:outputLabel value="#{transaction.amount}"/>
+                        <h:outputLabel value="#{ttransaction.amount}"/>
                     </p:column>
                     <ui:remove>                        
                         <p:column headerText="Balance" >
-                            <h:outputLabel value="#{transaction.balance}"/>
+                            <h:outputLabel value="#{ttransaction.balance}"/>
                         </p:column>
                     </ui:remove>
                 </p:dataTable> 
@@ -105,15 +106,19 @@
         </h:form>
 
         <h:form id="SUM_FORM">
-            <p:dialog id="SUM_DIAG" widgetVar="SUM_WIDGET" header="Sum Grouped by Description" closable="true" modal="true" draggable="true" >
-                <p:dataTable value="#{transMB.transactions}" var="transaction" paginator="true" rows="20">
-                    <p:column headerText="Description">
-                        <h:outputLabel value="#{transaction.description}"/>
-                    </p:column>
+            <p:dialog id="SUM_DIAG" widgetVar="SUM_WIDGET" header="Sum Grouped by Description" closable="false" modal="true" draggable="true">
+                <p:dataTable value="#{transMB.transactions}" var="transaction2" paginator="true" rows="20">
+                    <ui:remove>
+                        <p:column headerText="Description">
+                            <h:outputLabel value="#{transaction2.description}"/>
+                        </p:column>
+                    </ui:remove>
+
                     <p:column headerText="Sum">
-                        <h:outputLabel value="#{transaction.amount}"/>
+                        <h:outputLabel value="#{transaction2.amount}"/>
                     </p:column>
                 </p:dataTable>
+                <p:commandButton value="Close" actionListener="#{transMB.initPage()}"   oncomplete="SUM_WIDGET.hide()" />
             </p:dialog>
         </h:form>
     </h:body>
