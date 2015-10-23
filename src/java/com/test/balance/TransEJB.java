@@ -7,6 +7,8 @@ package com.test.balance;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
@@ -59,9 +61,19 @@ public class TransEJB {
         return qry.getResultList();
     }
     
-    public BigDecimal sumGroupByDescription () {
-        TypedQuery<BigDecimal> qry = this.em.createNamedQuery("Transactions.sumGroupByDescription", BigDecimal.class);
+    public Collection<Transactions> findDate(Date tDate){
+        TypedQuery<Transactions> qry = (TypedQuery<Transactions>) this.em.createNamedQuery("Transactions.findByTransDate").setParameter("transDate", tDate);
+        return qry.getResultList();
+    }
+    
+    public BigDecimal sum() {
+        TypedQuery<BigDecimal> qry = this.em.createNamedQuery("Transactions.sum", BigDecimal.class);
         return qry.getSingleResult();
+    }
+    
+    public List<Object[]> sumGroupByDescription() {
+        TypedQuery<Object[]> qry = this.em.createNamedQuery("Transactions.sumGroupByDescription", Object[].class);
+        return qry.getResultList();
     }
 
     // Add business logic below. (Right-click in editor and choose

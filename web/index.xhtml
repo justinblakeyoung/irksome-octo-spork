@@ -5,55 +5,127 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets">
-    <h:head>
-        <title>Balance</title>
-        <script type="text/javascript">
-            function handleEdit(xhr, status, args) {
-                if (!args.validationFailed) {
-                    EDT_WGT.hide();
-                }
+
+    <h:head>      
+        <title>JARVIS</title>
+        <style>
+            h1 {
+                font-family: Ariel, Helvetica, sans-serif;  
+                color: navy;
             }
+
+            p {
+                font-family: Ariel, Helvetica, sans-serif;
+                color: navy;
+            }
+        </style>
+        <script src="js/jquery.simpleWeather.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $.simpleWeather({
+                    location: 'Katy, TX',
+                    woeid: '',
+                    unit: 'f',
+                    success: function (weather) {
+                        html = '<h2><i class="icon-' + weather.code + '"></i> ' + weather.temp + '&deg;' + weather.units.temp + '</h2>';
+                        html += '<ul><li>' + weather.city + ', ' + weather.region + '</li>';
+                        html += '<li class="currently">' + weather.currently + '</li>';
+                        html += '<li>' + weather.wind.direction + ' ' + weather.wind.speed + ' ' + weather.units.speed + '</li></ul>';
+
+                        $('#weather').html(html);
+                    },
+                    error: function (error) {
+                        $('#weather').html('<p>' + error + '</p>');
+                    }
+                });
+            });
         </script>
     </h:head>
+
     <h:body>
 
-        <h:form id="TRANS_FRM">
-            <h:panelGrid columns="3" cellspacing="5px">
-                <p:inputText id="SEARCH_BOX" value="#{transMB.searchString}"/>
-                <p:commandButton value="Search" actionListener="#{transMB.findByString()}" update=":TRANS_FRM:SEARCH_BOX :TRANS_FRM:TRANS_LST"/>
-            </h:panelGrid>               
-            <h:panelGrid columns="5" cellspacing="5px">
-                <p:commandButton value="Add Transaction" actionListener="#{transMB.initEditDialog()}" oncomplete="EDT_WIDGET.show()" update=":EDT_FORM:EDT_DIAG">
-                    <f:param name="editMode" value="ADD"/>                  
-                </p:commandButton>
-                <p:commandButton value="Edit Transaction" actionListener="#{transMB.initEditDialog()}" oncomplete="EDT_WIDGET.show()" >
-                    <f:param name="editMode" value="EDIT"/>
-                </p:commandButton>
-                <p:commandButton value="Remove Transaction" oncomplete="CONF_WIDGET.show()"/>
-                <p:commandButton value="Sums" actionListener="#{transMB.sumsGroupByDesc()}" update=":SUM_FORM" oncomplete="SUM_WIDGET.show()"/>
-                <p:commandButton icon="ui-icon-refresh" actionListener="#{transMB.initPage()}" update=":TRANS_FRM:TRANS_LST"/>
-            </h:panelGrid>
-            <h:panelGrid columns="1" cellspacing="5px">
-                <p:dataTable id="TRANS_LST" value="#{transMB.transactions}" var="ttransaction" rowKey="#{ttransaction.id}" 
-                             selectionMode="single" selection="#{transMB.transaction}" >
-                    <p:ajax event="rowSelect" update=":EDT_FORM :CONF_FORM"/>
-                    <p:column headerText="Date">
-                        <h:outputLabel value="#{ttransaction.transDate}"/>
-                    </p:column>                       
-                    <p:column headerText="Description">
-                        <h:outputLabel value="#{ttransaction.description}"/>
-                    </p:column>
-                    <p:column headerText="Amount">
-                        <h:outputLabel value="#{ttransaction.amount}"/>
-                    </p:column>
-                    <ui:remove>                        
-                        <p:column headerText="Balance" >
-                            <h:outputLabel value="#{ttransaction.balance}"/>
-                        </p:column>
-                    </ui:remove>
-                </p:dataTable> 
-            </h:panelGrid>
+        <h:form>
+            <em><h1 style="">JARVIS</h1></em>
+            <ui:remove>
+                <p:menubar>
+                    <p:menuitem value="test" actionListener="#{MonthlyExpensesMB.createLinearModel()}" oncomplete="PROJ_WIDGET.show()"/>
+                </p:menubar>
+            </ui:remove>
         </h:form>
+
+
+        <p:layout style="min-width:400px;min-height:200px;">        
+            <p:layoutUnit position="west" resizable="true" minSize="400">
+                <h:panelGrid columns="1" cellspacing="5px" >
+                    <p:accordionPanel activeIndex="0,1" multiple="true">
+                        <p:tab title="Weather" >
+                            <p id="weather"></p>
+                        </p:tab>
+                        <p:tab title="Google Calendar" >
+                            <p:dataTable id="EVENTS_LST" value="#{EventMB.eventsList}" var="event" paginator="true" rows="10"> 
+                                <p:column headerText="Summary">
+                                    <h:outputLabel value="#{event.summary}"/>
+                                </p:column>                       
+                                <p:column headerText="Date">
+                                    <h:outputLabel value="#{event.date}"/>
+                                </p:column>
+                            </p:dataTable> 
+                        </p:tab>
+                    </p:accordionPanel>
+                </h:panelGrid>
+            </p:layoutUnit>
+
+
+
+            <p:layoutUnit position="center" resizable="true" minSize="600">
+                <h:form id="TRANS_FRM">
+                    <ui:remove>
+                        <p:menubar>
+                            <p:menuitem value="Add Transaction" actionListener="#{transMB.initEditDialog()}" oncomplete="EDT_WIDGET.show()" update=":EDT_FORM:EDT_DIAG">
+                                <f:param name="editMode" value="ADD"/>  
+                            </p:menuitem>
+                            <p:menuitem value="Edit Transaction" actionListener="#{transMB.initEditDialog()}" oncomplete="EDT_WIDGET.show()" update=":EDT_FORM:EDT_DIAG">
+                                <f:param name="editMode" value="EDIT"/>                  
+                            </p:menuitem>
+                            <p:menuitem value="Remove Transaction" oncomplete="CONF_WIDGET.show()"/>
+
+                            <p:submenu label="Aggregate">
+                                <p:menuitem value="Total Sum" actionListener="#{transMB.sum()}" update=":SUM_FORM" oncomplete="SUM_WIDGET.show()"/>
+                                <p:menuitem value="Sum - by description" actionListener="#{transMB.sumGroupByDesc()}" update=":SUM_FORM" oncomplete="SUM_WIDGET.show()"/>
+                            </p:submenu>
+                        </p:menubar>
+                    </ui:remove>
+
+                    <h:panelGrid columns="4" cellspacing="5px">
+                        <p:inputText id="SEARCH_BOX" value="#{transMB.searchString}"/>
+                        <p:commandButton value="Search" actionListener="#{transMB.findByString()}" update=":TRANS_FRM:SEARCH_BOX :TRANS_FRM:TRANS_LST"/>
+                        <p:commandButton icon="ui-icon-refresh" actionListener="#{transMB.initPage()}" update=":TRANS_FRM:TRANS_LST"/>
+                        <p:commandButton value="Projection" actionListener="#{MonthlyExpensesMB.createLinearModel()}" oncomplete="PROJ_WIDGET.show()"/>
+                    </h:panelGrid>  
+
+                    <h:panelGrid columns="1" cellspacing="5px">
+                        <p:dataTable id="TRANS_LST" value="#{transMB.transactions}" paginator="true" rows="20" var="ttransaction" rowKey="#{ttransaction.id}" 
+                                     selectionMode="single" selection="#{transMB.transaction}" >
+                            <p:ajax event="rowSelect" update=":EDT_FORM :CONF_FORM"/>
+                            <p:column headerText="Date">
+                                <h:outputLabel value="#{ttransaction.dateString}"/>
+                            </p:column>                       
+                            <p:column headerText="Description">
+                                <h:outputLabel value="#{ttransaction.description}"/>
+                            </p:column>
+                            <p:column headerText="Amount">
+                                <h:outputLabel value="#{ttransaction.amount}"/>
+                            </p:column>
+                            <ui:remove>                        
+                                <p:column headerText="Balance" >
+                                    <h:outputLabel value="#{ttransaction.balance}"/>
+                                </p:column>
+                            </ui:remove>
+                        </p:dataTable> 
+                    </h:panelGrid> 
+                </h:form>
+            </p:layoutUnit>
+        </p:layout>
 
         <h:form id="EDT_FORM">
             <p:dialog id="EDT_DIAG" widgetVar="EDT_WIDGET" header="Edit Transaction" closable="true" modal="true" >
@@ -78,6 +150,16 @@
             </p:dialog>
         </h:form>
 
+        <h:form id="PROJ_FORM">
+            <p:dialog id="PROJ_DIAG" widgetVar="PROJ_WIDGET" header="2-Month Projection" closable="true" modal="true">
+                <h:panelGrid columns="1" cellspacing="5px">
+                    <p:lineChart xaxisLabel="Date"  xaxisAngle="90" yaxisLabel="Balance" 
+                                 value="#{MonthlyExpensesMB.model}" legendPosition="nw" style="height:400px;width: 1500px;" 
+                                 fill="true" minY="0" />
+                </h:panelGrid>
+            </p:dialog>
+        </h:form>
+
         <h:form id="CONF_FORM">
             <p:dialog id="CONF_DIAG" widgetVar="CONF_WIDGET" header="Confirm Delete" closable="true" modal="true">
                 <ui:fragment rendered="#{transMB.transaction ne null}">
@@ -93,7 +175,7 @@
         </h:form>
 
         <h:form id="RIGHTCLK_FORM">
-            <p:contextMenu id="RIGHTCLK_MENU">
+            <p:contextMenu id="RIGHTCLK_MENU" for=":TRANS_FRM:TRANS_LST">
                 <p:menuitem value="Add" actionListener="#{transMB.initEditDialog()}" oncomplete="EDT_WIDGET.show()" update=":EDT_FORM:EDT_DIAG"
                             icon="ui-icon-plus">
                     <f:param name="editMode" value="ADD"/>
@@ -102,18 +184,17 @@
                     <f:param name="editMode" value="Edit"/>                  
                 </p:menuitem>
                 <p:menuitem value="Delete" oncomplete="CONF_WIDGET.show()" update=":TRANS_FRM:TRANS_LST" icon="ui-icon-close"/>
+                <p:menuitem value="Filter Date" update=":TRANS_FRM:TRANS_LST" actionListener="#{transMB.findByDate(transMB.transaction.transDate)}" />
+                <p:menuitem value="Filter Description" update=":TRANS_FRM:TRANS_LST" actionListener="#{transMB.findByString(transMB.transaction.description)}" />
             </p:contextMenu>
         </h:form>
 
         <h:form id="SUM_FORM">
             <p:dialog id="SUM_DIAG" widgetVar="SUM_WIDGET" header="Sum Grouped by Description" closable="false" modal="true" draggable="true">
                 <p:dataTable value="#{transMB.transactions}" var="transaction2" paginator="true" rows="20">
-                    <ui:remove>
-                        <p:column headerText="Description">
-                            <h:outputLabel value="#{transaction2.description}"/>
-                        </p:column>
-                    </ui:remove>
-
+                    <p:column headerText="Description">
+                        <h:outputLabel value="#{transaction2.description}"/>
+                    </p:column>
                     <p:column headerText="Sum">
                         <h:outputLabel value="#{transaction2.amount}"/>
                     </p:column>

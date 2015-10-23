@@ -31,16 +31,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "Transactions")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Transactions.findAll", query = "SELECT t FROM Transactions t"),
+    @NamedQuery(name = "Transactions.findAll", query = "SELECT t FROM Transactions t ORDER BY t.transDate DESC"),
     @NamedQuery(name = "Transactions.findByTransDate", query = "SELECT t FROM Transactions t WHERE t.transDate = :transDate"),
     @NamedQuery(name = "Transactions.findByDescription", query = "SELECT t FROM Transactions t WHERE t.description LIKE :description"),
     @NamedQuery(name = "Transactions.findByComments", query = "SELECT t FROM Transactions t WHERE t.comments = :comments"),
     @NamedQuery(name = "Transactions.findByCheckNumber", query = "SELECT t FROM Transactions t WHERE t.checkNumber = :checkNumber"),
     @NamedQuery(name = "Transactions.findByAmount", query = "SELECT t FROM Transactions t WHERE t.amount = :amount"),
-    @NamedQuery(name = "Transactions.sumGroupByDescription", query = "SELECT Sum(t.amount) FROM Transactions t"),
+    @NamedQuery(name = "Transactions.sum", query = "SELECT Sum(t.amount) FROM Transactions t"),
+    @NamedQuery(name = "Transactions.sumGroupByDescription", query = "SELECT t.description, Sum(t.amount) FROM Transactions t GROUP BY t.description"),
     @NamedQuery(name = "Transactions.findByBalance", query = "SELECT t FROM Transactions t WHERE t.balance = :balance"),
     @NamedQuery(name = "Transactions.findById", query = "SELECT t FROM Transactions t WHERE t.id = :id")})
 public class Transactions implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Basic(optional = false)
     @NotNull
@@ -98,7 +100,7 @@ public class Transactions implements Serializable {
 
     public void setSearchString(String searchString) {
         this.searchString = searchString;
-    }    
+    }
 
     public String getDateString() {
         return new SimpleDateFormat("MM/dd/yyyy").format(this.transDate);
@@ -107,7 +109,7 @@ public class Transactions implements Serializable {
     public void setDateString(String dateString) {
         this.dateString = dateString;
     }
-    
+
     public Date getTransDate() {
         return transDate;
     }
@@ -188,5 +190,5 @@ public class Transactions implements Serializable {
     public String toString() {
         return "com.test.balance.Transactions[ id=" + id + " ]";
     }
-    
+
 }
