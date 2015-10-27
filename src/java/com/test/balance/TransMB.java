@@ -70,7 +70,7 @@ public class TransMB {
         String mode = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("editMode");
         if (mode.equalsIgnoreCase("ADD")) {
             this.transaction = new Transactions();
-            //this.transaction.setId(this.getTransactions().size() + 500);
+            this.transaction.setId(this.getTransactions().size() + 500);
             this.isAddingMode = true;
         } else {
             this.isAddingMode = false;
