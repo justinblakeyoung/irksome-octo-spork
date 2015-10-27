@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "monthly_expenses")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "MonthlyExpenses.findAll", query = "SELECT m FROM MonthlyExpenses m"),
+    @NamedQuery(name = "MonthlyExpenses.findAll", query = "SELECT m FROM MonthlyExpenses m ORDER BY m.dayOfMonth"),
     @NamedQuery(name = "MonthlyExpenses.groupByDay", query = "SELECT m.dayOfMonth, SUM(m.amount) FROM MonthlyExpenses m GROUP BY m.dayOfMonth"),
     @NamedQuery(name = "MonthlyExpenses.findByIdmonthlyExpenses", query = "SELECT m FROM MonthlyExpenses m WHERE m.idmonthlyExpenses = :idmonthlyExpenses"),
     @NamedQuery(name = "MonthlyExpenses.findByDescription", query = "SELECT m FROM MonthlyExpenses m WHERE m.description = :description"),

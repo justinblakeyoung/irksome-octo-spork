@@ -27,7 +27,7 @@ public class TransEJB {
     private EntityManager em;
 
     private static final Logger LOG = Logger.getLogger(TransEJB.class.getName());
-    
+
     public void addTrans(Transactions trans) {
         LOG.log(Level.INFO, "Adding transaction {0}", trans.getId());
         try {
@@ -42,12 +42,12 @@ public class TransEJB {
             this.em.merge(trans);
         }
     }
-    
-    public void remove(Transactions trans){
-        if (!this.em.contains(trans)){
+
+    public void remove(Transactions trans) {
+        if (!this.em.contains(trans)) {
             trans = this.em.merge(trans);
         }
-        
+
         this.em.remove(trans);
     }
 
@@ -55,22 +55,22 @@ public class TransEJB {
         TypedQuery<Transactions> qry = this.em.createNamedQuery("Transactions.findAll", Transactions.class);
         return qry.getResultList();
     }
-    
-    public Collection<Transactions> findDescription(String searchstring){
+
+    public Collection<Transactions> findDescription(String searchstring) {
         TypedQuery<Transactions> qry = (TypedQuery<Transactions>) this.em.createNamedQuery("Transactions.findByDescription").setParameter("description", "%" + searchstring + "%");
         return qry.getResultList();
     }
-    
-    public Collection<Transactions> findDate(Date tDate){
+
+    public Collection<Transactions> findDate(Date tDate) {
         TypedQuery<Transactions> qry = (TypedQuery<Transactions>) this.em.createNamedQuery("Transactions.findByTransDate").setParameter("transDate", tDate);
         return qry.getResultList();
     }
-    
+
     public BigDecimal sum() {
         TypedQuery<BigDecimal> qry = this.em.createNamedQuery("Transactions.sum", BigDecimal.class);
         return qry.getSingleResult();
     }
-    
+
     public List<Object[]> sumGroupByDescription() {
         TypedQuery<Object[]> qry = this.em.createNamedQuery("Transactions.sumGroupByDescription", Object[].class);
         return qry.getResultList();

@@ -5,11 +5,6 @@
  */
 package com.test.balance;
 
-import com.google.api.client.util.DateTime;
-import com.google.api.services.calendar.model.Event;
-import com.google.api.services.calendar.model.Events;
-import static com.test.balance.CalendarQuickstart.getCalendarService;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,8 +74,9 @@ public class TransMB {
 
     public void findByString() {
         this.transactions.clear();
-        this.transactions.addAll(this.transEJB.findDescription(this.searchString));
         LOG.log(Level.INFO, "*** the current searchString is {0}", searchString);
+        this.transactions.addAll(this.transEJB.findDescription(this.searchString));
+        System.out.println("The list is " + this.transactions.size() + " long");
     }
 
     public void findByString(String findString) {

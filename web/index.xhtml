@@ -96,11 +96,12 @@
                         </p:menubar>
                     </ui:remove>
 
-                    <h:panelGrid columns="4" cellspacing="5px">
+                    <h:panelGrid columns="5" cellspacing="5px">
                         <p:inputText id="SEARCH_BOX" value="#{transMB.searchString}"/>
                         <p:commandButton value="Search" actionListener="#{transMB.findByString()}" update=":TRANS_FRM:SEARCH_BOX :TRANS_FRM:TRANS_LST"/>
                         <p:commandButton icon="ui-icon-refresh" actionListener="#{transMB.initPage()}" update=":TRANS_FRM:TRANS_LST"/>
-                        <p:commandButton value="Projection" actionListener="#{MonthlyExpensesMB.createLinearModel()}" oncomplete="PROJ_WIDGET.show()"/>
+                        <p:commandButton value="Projection" actionListener="#{MonthlyExpensesMB.createLinearModel()}" oncomplete="PROJ_WIDGET.show()" update="PROJ_WIDGET"/>
+                        <p:commandButton value="Monthly Expenses" actionListener="#{MonthlyExpensesMB.listAllMonthlyExpenses()}" oncomplete="MON_EX_WIDGET.show()" update=":MON_EX_FORM"/>
                     </h:panelGrid>  
 
                     <h:panelGrid columns="1" cellspacing="5px">
@@ -156,6 +157,37 @@
                     <p:lineChart xaxisLabel="Date"  xaxisAngle="90" yaxisLabel="Balance" 
                                  value="#{MonthlyExpensesMB.model}" legendPosition="nw" style="height:400px;width: 1500px;" 
                                  fill="true" minY="0" />
+                </h:panelGrid>
+                <h:panelGrid columns="1" cellspacing="5px">
+                    <p:dataTable id="MON_EX_TABLE" value="#{MonthlyExpensesMB.monthlyExpenseList}" var="ME" paginator="true" rows="5">
+                        <p:column headerText="Description">
+                            <h:outputText value="#{ME.description}"/>
+                        </p:column>
+                        <p:column headerText="Amount">
+                            <h:outputText value="#{ME.amount}"/>
+                        </p:column>
+                        <p:column headerText="Day of MOnth">
+                            <h:outputText value="#{ME.dayOfMonth}"/>
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGrid>
+            </p:dialog>
+        </h:form>
+
+        <h:form id="MON_EX_FORM">
+            <p:dialog id="MON_EX_DIAG" widgetVar="MON_EX_WIDGET" header="Monthly Expenses" closable="true" modal="true">
+                <h:panelGrid columns="1" cellspacing="5px">
+                    <p:dataTable id="MON_EX_TABLE" value="#{MonthlyExpensesMB.monthlyExpenseList}" var="ME">
+                        <p:column headerText="Description">
+                            <h:outputText value="#{ME.description}"/>
+                        </p:column>
+                        <p:column headerText="Amount">
+                            <h:outputText value="#{ME.amount}"/>
+                        </p:column>
+                        <p:column headerText="Day of MOnth">
+                            <h:outputText value="#{ME.dayOfMonth}"/>
+                        </p:column>
+                    </p:dataTable>
                 </h:panelGrid>
             </p:dialog>
         </h:form>

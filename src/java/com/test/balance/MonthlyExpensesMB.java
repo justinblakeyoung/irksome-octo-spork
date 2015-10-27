@@ -30,10 +30,11 @@ import org.primefaces.model.chart.ChartSeries;
  */
 @ManagedBean(name = "MonthlyExpensesMB")
 @RequestScoped
-public class MonthlyExpensesMB {
+public final class MonthlyExpensesMB {
 
     private MonthlyExpenses monthly;
-    private List<MonthlyExpenses> monthlyList;
+    private List<MonthlyExpenses> monthlyListGroupedByDay;
+    private List<MonthlyExpenses> monthlyExpenseList;
     @EJB
     private MonthlyExpensesEJB meEjb;
     private static final Logger LOG = Logger.getLogger(MonthlyExpensesMB.class.getName());
@@ -47,12 +48,12 @@ public class MonthlyExpensesMB {
         this.monthly = monthly;
     }
 
-    public List<MonthlyExpenses> getMonthlyList() {
-        return monthlyList;
+    public List<MonthlyExpenses> getMonthlyListGroupedByDay() {
+        return monthlyListGroupedByDay;
     }
 
     public void setMonthlyList(List<MonthlyExpenses> monthlyList) {
-        this.monthlyList = monthlyList;
+        this.monthlyListGroupedByDay = monthlyList;
     }
 
     public MonthlyExpensesEJB getMeEjb() {
@@ -63,11 +64,18 @@ public class MonthlyExpensesMB {
         this.meEjb = meEjb;
     }
 
+    public List<MonthlyExpenses> getMonthlyExpenseList() {
+        return monthlyExpenseList;
+    }
+
+    public void setMonthlyExpenseList(List<MonthlyExpenses> monthlyExpenseList) {
+        this.monthlyExpenseList = monthlyExpenseList;
+    }
+
     /**
      * Creates a new instance of NewJSFManagedBean
      */
     public MonthlyExpensesMB() {
-
     }
 
     public void listAll() {
@@ -77,7 +85,7 @@ public class MonthlyExpensesMB {
     public void listMonthlyExpensesGroupByDay() {
 
         LOG.log(Level.INFO, "made it to MB **********");
-        this.monthlyList = new ArrayList<MonthlyExpenses>();
+        this.monthlyListGroupedByDay = new ArrayList<MonthlyExpenses>();
         LOG.log(Level.INFO, "made it to MB 2**********");
 
         List<Object[]> myList = this.meEjb.groupByDay();
@@ -89,12 +97,22 @@ public class MonthlyExpensesMB {
 
     @PostConstruct
     public void createLinearModel() {
+        this.monthlyExpenseList = new ArrayList<MonthlyExpenses>();
+        this.monthlyExpenseList.addAll(this.meEjb.listAllMonthlyExpenses());
         model = new CartesianChartModel();
         try {
             model.addSeries(getChartData("Projection"));
         } catch (ParseException ex) {
             Logger.getLogger(MonthlyExpensesMB.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public void listAllMonthlyExpenses(){
+        this.monthlyExpenseList = new ArrayList<MonthlyExpenses>();
+        this.monthlyExpenseList.addAll(this.meEjb.listAllMonthlyExpenses());
+        
+            System.out.println("THE LENGTH OF MONTHLY EXPENSE LIST IS " + this.monthlyExpenseList.size());
+        
     }
 
     public ChartSeries getChartData(String label) throws ParseException {
@@ -109,7 +127,7 @@ public class MonthlyExpensesMB {
         int ctr = 0;
         int mod = 1;
 
-        this.monthlyList = new ArrayList<MonthlyExpenses>();
+        this.monthlyListGroupedByDay = new ArrayList<MonthlyExpenses>();
         List<Object[]> myList = this.meEjb.groupByDay();
         List<String> payDays = this.listPayDays();
         for (Object[] o : myList) {

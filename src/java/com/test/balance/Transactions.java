@@ -12,6 +12,8 @@ import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -31,7 +33,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "Transactions")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Transactions.findAll", query = "SELECT t FROM Transactions t ORDER BY t.transDate DESC"),
+    @NamedQuery(name = "Transactions.findAll", query = "SELECT t FROM Transactions t order by t.transDate desc"),
     @NamedQuery(name = "Transactions.findByTransDate", query = "SELECT t FROM Transactions t WHERE t.transDate = :transDate"),
     @NamedQuery(name = "Transactions.findByDescription", query = "SELECT t FROM Transactions t WHERE t.description LIKE :description"),
     @NamedQuery(name = "Transactions.findByComments", query = "SELECT t FROM Transactions t WHERE t.comments = :comments"),
@@ -42,7 +44,6 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Transactions.findByBalance", query = "SELECT t FROM Transactions t WHERE t.balance = :balance"),
     @NamedQuery(name = "Transactions.findById", query = "SELECT t FROM Transactions t WHERE t.id = :id")})
 public class Transactions implements Serializable {
-
     private static final long serialVersionUID = 1L;
     @Basic(optional = false)
     @NotNull
@@ -70,8 +71,8 @@ public class Transactions implements Serializable {
     @Column(name = "Balance")
     private BigDecimal balance;
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
-    @NotNull
     @Column(name = "ID")
     private Integer id;
     @Transient
@@ -190,5 +191,5 @@ public class Transactions implements Serializable {
     public String toString() {
         return "com.test.balance.Transactions[ id=" + id + " ]";
     }
-
+    
 }

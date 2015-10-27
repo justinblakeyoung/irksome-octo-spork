@@ -35,8 +35,12 @@ public class MonthlyExpensesEJB {
     }
     */
     
+    public Collection<MonthlyExpenses> listAllMonthlyExpenses() {
+        TypedQuery<MonthlyExpenses> qry = this.em.createNamedQuery("MonthlyExpenses.findAll", MonthlyExpenses.class);
+        return qry.getResultList();
+    }
+    
     public List<Object[]> groupByDay() {
-        LOG.log(Level.INFO, "Made it to EJB");
         TypedQuery<Object[]> qry = this.em.createNamedQuery("MonthlyExpenses.groupByDay", Object[].class);
         return qry.getResultList();
     }
