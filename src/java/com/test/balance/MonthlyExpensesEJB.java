@@ -40,6 +40,11 @@ public class MonthlyExpensesEJB {
         return qry.getResultList();
     }
     
+    public Collection<MonthlyExpenses> listMonthlyExpensesForDay(Integer DOM) {
+        TypedQuery<MonthlyExpenses> qry = (TypedQuery<MonthlyExpenses>) this.em.createNamedQuery("MonthlyExpenses.findByDayOfMonth").setParameter("dayOfMonth", DOM);
+        return qry.getResultList();
+    }
+    
     public List<Object[]> groupByDay() {
         TypedQuery<Object[]> qry = this.em.createNamedQuery("MonthlyExpenses.groupByDay", Object[].class);
         return qry.getResultList();

@@ -13,16 +13,20 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
-import org.primefaces.model.chart.CartesianChartModel;
-import org.primefaces.model.chart.ChartSeries;
+import javax.faces.context.FacesContext;
+import org.primefaces.event.ItemSelectEvent;
+import org.primefaces.model.chart.AxisType;
+import org.primefaces.model.chart.DateAxis;
+import org.primefaces.model.chart.LineChartModel;
+import org.primefaces.model.chart.LineChartSeries;
 
 /**
  *
@@ -37,8 +41,11 @@ public final class MonthlyExpensesMB {
     private List<MonthlyExpenses> monthlyExpenseList;
     @EJB
     private MonthlyExpensesEJB meEjb;
-    private static final Logger LOG = Logger.getLogger(MonthlyExpensesMB.class.getName());
-    private CartesianChartModel model;
+    private LineChartModel model;
+    private Date today;
+    private List<Date> dateIndex;
+    private BigDecimal projBalance;
+    private int projLength;
 
     public MonthlyExpenses getMonthly() {
         return monthly;
@@ -84,10 +91,7 @@ public final class MonthlyExpensesMB {
 
     public void listMonthlyExpensesGroupByDay() {
 
-        LOG.log(Level.INFO, "made it to MB **********");
         this.monthlyListGroupedByDay = new ArrayList<MonthlyExpenses>();
-        LOG.log(Level.INFO, "made it to MB 2**********");
-
         List<Object[]> myList = this.meEjb.groupByDay();
 
         for (Object[] o : myList) {
@@ -96,34 +100,64 @@ public final class MonthlyExpensesMB {
     }
 
     @PostConstruct
+    public void initPage(){
+        this.projBalance = new BigDecimal("1055.00");
+        this.projLength = 6;
+        createLinearModel();
+    }
+    
+    
+    
     public void createLinearModel() {
         this.monthlyExpenseList = new ArrayList<MonthlyExpenses>();
         this.monthlyExpenseList.addAll(this.meEjb.listAllMonthlyExpenses());
-        model = new CartesianChartModel();
+        this.model = new LineChartModel();
+        this.model.setTitle(this.projLength + "-Month Projection");
+        this.model.setZoom(true);
+        this.model.getAxis(AxisType.Y).setLabel("Balance");
+        this.model.setShadow(true);
+        this.model.setAnimate(true);
+        DateAxis axis = new DateAxis("Dates");
+        axis.setTickAngle(-50);
+        /*
+         Calendar cal = Calendar.getInstance();
+         cal.add(Calendar.MONTH, -1);
+         axis.setMin(new SimpleDateFormat("yyyy-MM-dd").format(cal.getTime()));
+         */
+        axis.setTickFormat("%b %#d, %y");
+
+        this.model.getAxes().put(AxisType.X, axis);
+
         try {
-            model.addSeries(getChartData("Projection"));
+            model.addSeries(getChartData(this.projLength + "-Month Projection"));
         } catch (ParseException ex) {
             Logger.getLogger(MonthlyExpensesMB.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    public void listAllMonthlyExpenses(){
+
+    public void listAllMonthlyExpenses() {
         this.monthlyExpenseList = new ArrayList<MonthlyExpenses>();
         this.monthlyExpenseList.addAll(this.meEjb.listAllMonthlyExpenses());
-        
-            System.out.println("THE LENGTH OF MONTHLY EXPENSE LIST IS " + this.monthlyExpenseList.size());
-        
+
     }
 
-    public ChartSeries getChartData(String label) throws ParseException {
+    public void listMonthlyExpensesForDay(Integer dayOfMonth) {
+        this.monthlyExpenseList = new ArrayList<MonthlyExpenses>();
+        this.monthlyExpenseList.addAll(this.meEjb.listMonthlyExpensesForDay(dayOfMonth));
+    }
 
-        BigDecimal balance = new BigDecimal("326.00");
+    public LineChartSeries getChartData(String label) throws ParseException {
+
+        //this.projBalance = new BigDecimal("1055.87");
+        BigDecimal workingBalance = this.projBalance;
+        this.dateIndex = new ArrayList();
         Calendar cal = Calendar.getInstance();
-        Date today = cal.getTime();
-        cal.add(Calendar.MONTH, 2);
+        this.today = cal.getTime();
+        //this.projLength = 12;
+        cal.add(Calendar.MONTH, projLength);
         Date endDate = cal.getTime();
         Map<Integer, BigDecimal> meMap = new HashMap();
-        ChartSeries data = new ChartSeries(label);
+        LineChartSeries data = new LineChartSeries(label);
         int ctr = 0;
         int mod = 1;
 
@@ -135,18 +169,20 @@ public final class MonthlyExpensesMB {
         }
         Date curDate = today;
         while (curDate.before(endDate)) {
+
+            dateIndex.add(curDate);
+            data.set(new SimpleDateFormat("yyyy-MM-dd").format(curDate), workingBalance);
+
             System.out.println(new SimpleDateFormat("MM/dd/yyyy").format(curDate));
             cal.setTime(curDate);
             if (meMap.containsKey(curDate.getDate())) {
-                balance = balance.subtract(meMap.get(curDate.getDate()));
+                workingBalance = workingBalance.subtract(meMap.get(curDate.getDate()));
             }
             if (payDays.contains(new SimpleDateFormat("MM/dd/yyyy").format(curDate))) {
-                balance = balance.add(new BigDecimal("2200.50"));
+                workingBalance = workingBalance.add(new BigDecimal("1750.00"));
             }
-            if (ctr%mod == 0) {
-                data.set(new SimpleDateFormat("MM/dd/yyyy").format(curDate), balance);
-            }
-            System.out.println(new SimpleDateFormat("MM/dd/yyyy").format(curDate) + " , " + balance.toString());
+
+            System.out.println("Charting " + new SimpleDateFormat("MM/dd/yyyy").format(curDate) + " , " + workingBalance.toString());
             //System.out.print(balance);
             cal.add(Calendar.DATE, 1);
             curDate = cal.getTime();
@@ -155,14 +191,6 @@ public final class MonthlyExpensesMB {
         return data;
     }
 
-    /*
-     public ChartSeries getChartData(String label) throws ParseException {
-     ChartSeries data = new ChartSeries(label);
-     data.set("one", 5);
-     data.set("two", 10);
-     LOG.log(Level.INFO, "Added to ChartSeries************");
-     return data;
-     }*/
     public List<String> listPayDays() throws ParseException {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
@@ -183,12 +211,50 @@ public final class MonthlyExpensesMB {
 
     }
 
-    public CartesianChartModel getModel() {
+    public void itemSelect(ItemSelectEvent event) {
+        listMonthlyExpensesForDay(this.dateIndex.get(event.getItemIndex()).getDate());
+    }
+
+    public LineChartModel getModel() {
         return model;
     }
 
-    public void setModel(CartesianChartModel model) {
+    public void setModel(LineChartModel model) {
         this.model = model;
     }
+
+    public Date getToday() {
+        return today;
+    }
+
+    public void setToday(Date today) {
+        this.today = today;
+    }
+
+    public List<Date> getDateIndex() {
+        return dateIndex;
+    }
+
+    public void setDateIndex(List<Date> dateIndex) {
+        this.dateIndex = dateIndex;
+    }
+
+    public BigDecimal getProjBalance() {
+        return projBalance;
+    }
+
+    public void setProjBalance(BigDecimal projBalance) {
+        this.projBalance = projBalance;
+    }
+
+    public int getProjLength() {
+        return projLength;
+    }
+
+    public void setProjLength(int projLength) {
+        this.projLength = projLength;
+    }
+    
+    
 
 }

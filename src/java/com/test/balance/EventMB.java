@@ -9,6 +9,7 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -45,10 +46,12 @@ public class EventMB {
             listAllEvents();
         } catch (IOException ex) {
             Logger.getLogger(EventMB.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ParseException ex) {
+            Logger.getLogger(EventMB.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
-    public void listAllEvents() throws IOException{
+    public void listAllEvents() throws IOException, ParseException{
         List<String[]> myList = new ArrayList<String[]>();
 
         eventsList = new ArrayList<JarvisEvent>();
@@ -67,6 +70,9 @@ public class EventMB {
                 .setSingleEvents(true)
                 .execute();
         List<Event> items = events.getItems();
+        for (Event e : items){
+            System.out.println(e.getSummary() + " , " + e.getStart());
+        }
         if (items.size() == 0) {
             System.out.println("No upcoming events found.");
         } else {
@@ -77,7 +83,8 @@ public class EventMB {
                     start = event.getStart().getDate();
                 }
                 String today = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
-                eventsList.add(new JarvisEvent(event.getSummary(), (start.toString().equals(today) ? "Today" : start.toString())));
+                String startString = new SimpleDateFormat("MM/dd/yyyy").format(new SimpleDateFormat("yyyy-MM-dd").parse(start.toString().substring(0, 10)));
+                eventsList.add(new JarvisEvent(event.getSummary(), (start.toString().equals(today) ? "Today" : startString)));
             }
         }
         for (JarvisEvent e : eventsList) {

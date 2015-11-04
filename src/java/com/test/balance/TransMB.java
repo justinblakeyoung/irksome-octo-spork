@@ -74,7 +74,7 @@ public class TransMB {
 
     public void findByString() {
         this.transactions.clear();
-        LOG.log(Level.INFO, "*** the current searchString is {0}", searchString);
+        LOG.log(Level.INFO, "*** the current searchString is {0}", this.searchString);
         this.transactions.addAll(this.transEJB.findDescription(this.searchString));
         System.out.println("The list is " + this.transactions.size() + " long");
     }
