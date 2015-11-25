@@ -21,6 +21,7 @@ import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
+import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import org.primefaces.event.ItemSelectEvent;
 import org.primefaces.model.chart.AxisType;
@@ -33,7 +34,7 @@ import org.primefaces.model.chart.LineChartSeries;
  * @author justin
  */
 @ManagedBean(name = "MonthlyExpensesMB")
-@RequestScoped
+@SessionScoped
 public final class MonthlyExpensesMB {
 
     private MonthlyExpenses monthly;
@@ -43,9 +44,12 @@ public final class MonthlyExpensesMB {
     private MonthlyExpensesEJB meEjb;
     private LineChartModel model;
     private Date today;
+    private String todayString;
     private List<Date> dateIndex;
     private BigDecimal projBalance;
     private int projLength;
+    private BigDecimal projAdjust;
+    private BigDecimal currentBalance;
 
     public MonthlyExpenses getMonthly() {
         return monthly;
@@ -100,14 +104,13 @@ public final class MonthlyExpensesMB {
     }
 
     @PostConstruct
-    public void initPage(){
-        this.projBalance = new BigDecimal("1055.00");
-        this.projLength = 6;
+    public void initPage() {
+        this.projBalance = new BigDecimal("1023.90");
+        this.projLength = 12;
+        this.projAdjust = new BigDecimal("0.00");
         createLinearModel();
     }
-    
-    
-    
+
     public void createLinearModel() {
         this.monthlyExpenseList = new ArrayList<MonthlyExpenses>();
         this.monthlyExpenseList.addAll(this.meEjb.listAllMonthlyExpenses());
@@ -126,7 +129,7 @@ public final class MonthlyExpensesMB {
          */
         axis.setTickFormat("%b %#d, %y");
 
-        this.model.getAxes().put(AxisType.X, axis);
+        this.model.getAxes().put(AxisType.X, axis);                             
 
         try {
             model.addSeries(getChartData(this.projLength + "-Month Projection"));
@@ -153,6 +156,7 @@ public final class MonthlyExpensesMB {
         this.dateIndex = new ArrayList();
         Calendar cal = Calendar.getInstance();
         this.today = cal.getTime();
+        this.todayString = new SimpleDateFormat("MM/dd/yyyy").format(today);
         //this.projLength = 12;
         cal.add(Calendar.MONTH, projLength);
         Date endDate = cal.getTime();
@@ -179,7 +183,11 @@ public final class MonthlyExpensesMB {
                 workingBalance = workingBalance.subtract(meMap.get(curDate.getDate()));
             }
             if (payDays.contains(new SimpleDateFormat("MM/dd/yyyy").format(curDate))) {
-                workingBalance = workingBalance.add(new BigDecimal("1750.00"));
+                workingBalance = workingBalance.add(new BigDecimal("2000.00"));
+                if (this.projAdjust != null) {
+                    workingBalance = workingBalance.add(projAdjust);
+
+                }
             }
 
             System.out.println("Charting " + new SimpleDateFormat("MM/dd/yyyy").format(curDate) + " , " + workingBalance.toString());
@@ -254,7 +262,25 @@ public final class MonthlyExpensesMB {
     public void setProjLength(int projLength) {
         this.projLength = projLength;
     }
-    
-    
+
+    public BigDecimal getCurrentBalance() {
+        return currentBalance;
+    }
+
+    public String getTodayString() {
+        return todayString;
+    }
+
+    public void setTodayString(String todayString) {
+        this.todayString = todayString;
+    }
+
+    public BigDecimal getProjAdjust() {
+        return projAdjust;
+    }
+
+    public void setProjAdjust(BigDecimal projAdjust) {
+        this.projAdjust = projAdjust;
+    }
 
 }

@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
+import javax.faces.bean.RequestScoped;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 
@@ -65,7 +66,6 @@ public class TransMB {
         String mode = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("editMode");
         if (mode.equalsIgnoreCase("ADD")) {
             this.transaction = new Transactions();
-            this.transaction.setId(this.getTransactions().size() + 500);
             this.isAddingMode = true;
         } else {
             this.isAddingMode = false;
@@ -120,7 +120,6 @@ public class TransMB {
 
     public void commitChanges() {
         if (isAddingMode) {
-            LOG.log(Level.INFO, "Made it to commit changes in isAddingMode");
             this.transEJB.addTrans(this.transaction);
         } else {
             this.transEJB.update(this.transaction);

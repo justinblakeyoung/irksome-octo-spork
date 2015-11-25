@@ -41,7 +41,7 @@ public class TransEJB {
         if (!this.em.contains(trans)) {
             this.em.merge(trans);
         }
-    }
+    } 
 
     public void remove(Transactions trans) {
         if (!this.em.contains(trans)) {
